@@ -36,13 +36,6 @@ export const lambdaHandler = async (
     context: APIGatewayEventRequestContext,
 ): Promise<APIGatewayProxyResult> => {
     // TODO: RETRIEVE DATA FROM BODY OBJECT
-    // if (event.body) {
-    //     // const test = JSON.parse(event.body)
-
-    //     console.log(
-    //         "TEST:",  JSON.stringify(event.body)
-    //     );
-    // }
     const secret_name = 'prod/extradite-lambda';
 
     if (!event.queryStringParameters?.assetUrl) {
@@ -70,7 +63,7 @@ export const lambdaHandler = async (
 
                 return name;
             },
-            resumeIfFileExists: true
+            resumeIfFileExists: true,
         });
 
         downloader.on('end', async (info) => {
@@ -78,19 +71,15 @@ export const lambdaHandler = async (
                 const secretString = await client.send(
                     new GetSecretValueCommand({
                         SecretId: secret_name,
-                        VersionStage: 'AWSCURRENT', // VersionStage defaults to AWSCURRENT if unspecified
                     }),
                 );
 
-                const secret = secretString.SecretString;
-
-                console.log("SECRETS");
-                console.log(secret);
+                const secret = JSON.parse(secretString?.SecretString || '');
 
                 cloudinary.config({
-                    cloud_name: 'dkfptto8m',
-                    api_key: '155664284855855',
-                    api_secret: 'vk-7ylmyK6cFlPd4Eo5cbPeqPQg',
+                    cloud_name: secret?.CLOUDINARY_CLOUD,
+                    api_key: secret?.CLOUDINARY_API_KEY,
+                    api_secret: secret?.CLOUDINARY_API_SECRET,
                     secure: true,
                 });
 
